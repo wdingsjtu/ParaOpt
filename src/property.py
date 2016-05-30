@@ -10,8 +10,7 @@
 from __future__ import print_function
 
 import math
-import os.path
-import subprocess
+import os
 import time
 
 
@@ -30,7 +29,7 @@ class Property(object):
             """
             now = time.strftime("%Y-%m-%d-%H-%M-%S")
             backUpTo = ''.join([fileName, '#', now])
-            subprocess.call("mv %s '%s'" % (fileName, backUpTo), shell=True)
+            os.rename(fileName, backUpTo)
             print("Backup existing %s to %s." % (fileName, backUpTo))
 
         if os.path.exists(self.name):
@@ -67,6 +66,7 @@ class Property(object):
         value = float(self.value)
         ref = float(self.reference)
 
+        #TODO ref = 0?
         if not self.special:
             targFunc = (value / ref - 1.0) ** 2
         else:

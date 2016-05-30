@@ -14,7 +14,6 @@
 from __future__ import print_function
 
 import math
-import subprocess
 import sys
 # import scipy.optimize
 from src.minimize import minimize
@@ -56,21 +55,21 @@ def print_info(argDict):
 # -------------------------------------------------------------------------- #
 
 def initialize_parameters(inTable, outTable, ffFile=None, ffTemp=None):
-    """ Initialize input/output PT (parameter table) objects and read input 
+    """ Initialize input/output PT (parameter table) objects and read input
     parameters.
- 
+
     type_inTable: str
     type_outTable: str
     rtype: (float list, PT object)
     """
     paraTableInitial = ParameterTable(inTable)
     paraValuesInitial = paraTableInitial.current_parameter()
-    subprocess.call(
-        "head -1 %s > %s" % (inTable, outTable),
-        shell=True,
-    )
+    with open(inTable, "rt") as inf:
+        headline = inf.readline()
+        with open(outTable, "wt") as outf:
+            outf.write(headline)
     paraTable = ParameterTable(outTable, datafile=ffFile, datatemp=ffTemp)
-    
+
     nDim = len(paraValuesInitial)
     paraArrayInitial = np.empty((nDim + 1, nDim))
     paraArrayInitial[0] = paraValuesInitial
@@ -84,12 +83,12 @@ def initialize_parameters(inTable, outTable, ffFile=None, ffTemp=None):
             y[k] = zdelt
         paraArrayInitial[k + 1] = y
     return paraArrayInitial, paraTable
-    
+
 def initialize_properties(nameList, refList, specList, n):
     """ Initialize targeted property objects, given the list of input property
     names (nameList), references (refList), specials(specList), and the total
     number of total properties (n).
-    
+
     type_nameList: str list
     type_n: int
     rtype: property object list
@@ -114,7 +113,7 @@ def test_flow(x, xt, y):
     x: parameters
     xtable: the table to be written every step.
     y: targeted properties
-    
+
     type_x: float list
     type_xtable: parameterTable object
     type_y: property object list

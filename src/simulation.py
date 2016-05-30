@@ -3,7 +3,7 @@
 #
 # Created:  2016/Jan/29
 # Purpose:  Deal with simulation, including post-processing.
-# Notes:    
+# Notes:
 #
 # -------------------------------------------------------------------------- #
 
@@ -20,6 +20,9 @@ class Simulation(object):
     def __init__(self, simuPath, postScript=None):
         self.path = os.path.abspath(simuPath)
         self.script = postScript
+        self.execpath = os.getcwd()
+        if not os.path.exists(self.path):
+            raise ValueError("Simulation path '%s' doesn't exist." %self.path)
 
     def run(self, command):
         """ Execute the input command (command).
@@ -29,7 +32,6 @@ class Simulation(object):
         type_command: str
         rtype: None
         """
-        preSimDir = os.getcwd()
         os.chdir(self.path)
         logFile = open("log.screen", "wt")
         try:
@@ -39,10 +41,10 @@ class Simulation(object):
             logFile.close()
             os.remove("log.screen")
             raise ValueError("Command fails to run: %s" % command)
-        # TODO 
+        # TODO
         #      1) command on windows
-        #      2) Be careful about 'shell-True'. 
-        os.chdir(preSimDir)
+        #      2) Be careful about 'shell-True'.
+        os.chdir(self.execpath)
 
     def post_process(self, scriptFileName=None):
         # TODO why not return list??
@@ -58,19 +60,23 @@ class Simulation(object):
         type_scriptFileName: str
         rtype: str list
         """
+        os.chdir(self.path)
         if not scriptFileName:
             scriptFileName = self.script
         if not scriptFileName:
             raise ValueError("Post-process file not provided.")
+        if not os.path.exists(scriptFileName):
+            raise ValueError("Post-processing Script '%s' doesn't exists." %s)
 
         print("Results being processed by: \"%s\" " % scriptFileName)
         subprocess.check_call(
-            'cd %s && ./%s' % (self.path, scriptFileName),
+            './%s' %scriptFileName,
             shell=True,
         )
         resFile = fileinput.FileInput(os.path.join(self.path, 'res.postprocess'))
         result = resFile.readline()
         print("Current properties:", result)
+        os.chdir(self.execpath)
         return result.split()
 
         # TODO def back_up_simulation_files(self, anyFilesName, destination):
